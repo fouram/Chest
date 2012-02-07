@@ -1,0 +1,10 @@
+admincmds:
+- ac.admin
+- ac.save
+- ac.reload
+worlds:
+- world
+- world_nether
+admins:
+- 4am
+autosave: 10

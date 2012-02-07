@@ -1,0 +1,30 @@
+name: BetaChest
+main: com.bettercraft.betachest.BetaChestPlugin
+version: 1.8.2
+authors: [4am, Mast3rPlan]
+depend: [Spout]
+description: >
+             Plugin that allows you to have virtual private chests. Previously AlphaChest, this version is modified for the Bettercraft server.
+
+commands:
+    chest:
+        description: Opens a virtual player-specific chest.
+        usage: |
+              /<command> - Opens your private chest.
+              /<command> [player] - Opens someone else's chest.
+        permission: ac.chest
+    clearchest:
+        description: Clears the contents of a chest.
+        usage: |
+              /<command> - Clears your private chest.
+              /<command> [player] - Clears someone else's chest.
+        permission: ac.chest
+    savechests:
+        description: Saves the chests to disk.
+        usage: |
+              /<command> - Saves all chests to disk.
+        permission: ac.save
+    workbench:
+        aliases: [craft, craftbox, craftingbox]
+        description: Opens a virtual workbench.
+        permission: ac.workbench
