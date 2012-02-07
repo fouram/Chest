@@ -25,7 +25,7 @@ public class BetaChestManager
 	public BetaChestManager(Plugin plugin)
 	{
 		this.plugin = (BetaChestPlugin) plugin;
-		this.dataFolder = plugin.getDataFolder();
+		this.dataFolder = new File(plugin.getDataFolder(),"chests/");
 		this.chests = new HashMap();
 	}
 

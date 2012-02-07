@@ -19,6 +19,8 @@ public class InventoryListener implements Listener {
 	
 	@EventHandler
 	public void HandleChestClose(InventoryCloseEvent e) {
-		plugin.getChestManager().savePlayer(e.getPlayer().getName());
+		if (e.getInventory().getName().equals("Premium Chest")) {
+			plugin.getChestManager().savePlayer(e.getPlayer().getName());
+		}
 	}
 }
