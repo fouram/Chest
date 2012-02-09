@@ -1,12 +1,9 @@
-package com.bettercraft.betachest.commands;
-
-import com.bettercraft.betachest.BetaChestManager;
-import com.bettercraft.betachest.BetaChestPlugin;
-import com.bettercraft.betachest.Teller;
-import com.bettercraft.betachest.Teller.Type;
+package net.betterverse.chest.commands;
 
 import java.util.List;
+
 import net.minecraft.server.EntityPlayer;
+
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -14,20 +11,21 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-public class ChestCommands
-implements CommandExecutor
-{
-	private final BetaChestPlugin plugin;
-	private final BetaChestManager chestManager;
+import net.betterverse.chest.ChestManager;
+import net.betterverse.chest.ChestPlugin;
+import net.betterverse.chest.Teller;
+import net.betterverse.chest.Teller.Type;
 
-	public ChestCommands(BetaChestPlugin plugin)
-	{
+public class ChestCommands implements CommandExecutor {
+	private final ChestPlugin plugin;
+	private final ChestManager chestManager;
+
+	public ChestCommands(ChestPlugin plugin) {
 		this.plugin = plugin;
-		this.chestManager = ((BetaChestPlugin)plugin).getChestManager();
+		this.chestManager = ((ChestPlugin)plugin).getChestManager();
 	}
 
-	public boolean onCommand(CommandSender sender, Command command, String label, String[] args)
-	{
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if ((sender instanceof Player)) {
 			String w = ((Player)sender).getWorld().getName();
 			if (!this.plugin.worlds.contains(w)) {
@@ -35,18 +33,19 @@ implements CommandExecutor
 			}
 		}
 		String name = command.getName();
-		if (name.equals("chest"))
+		if (name.equals("chest")) {
 			return performChestCommand(sender, args);
-		if (name.equalsIgnoreCase("clearchest"))
+		}
+		if (name.equalsIgnoreCase("clearchest")) {
 			return performClearChestCommand(sender, args);
+		}
 		if (name.equalsIgnoreCase("savechests")) {
 			return performSaveChestsCommand(sender, args);
 		}
 		return false;
 	}
 
-	private boolean performChestCommand(CommandSender sender, String[] args)
-	{
+	private boolean performChestCommand(CommandSender sender, String[] args) {
 		if ((sender instanceof Player)) {
 			Player player = (Player)sender;
 
@@ -97,7 +96,7 @@ implements CommandExecutor
 	}
 
 	private boolean performSaveChestsCommand(CommandSender sender, String[] args) {
-		if (((sender instanceof Player)) && 
+		if (((sender instanceof Player)) &&
 				(!((Player)sender).hasPermission("ac.save"))) {
 			Teller.tell(sender, Teller.Type.Warning, "You're not allowed to use this command.");
 			return true;

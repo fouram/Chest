@@ -1,26 +1,24 @@
-package com.bettercraft.betachest.commands;
-
-import com.bettercraft.betachest.BetaChestPlugin;
-import com.bettercraft.betachest.BetaWorkbench;
-import com.bettercraft.betachest.Teller;
-import com.bettercraft.betachest.Teller.Type;
+package net.betterverse.chest.commands;
 
 import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.NetServerHandler;
 import net.minecraft.server.Packet100OpenWindow;
+
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 
-public class WorkbenchCommand
-implements CommandExecutor
-{
-	private final BetaChestPlugin plugin;
+import net.betterverse.chest.ChestPlugin;
+import net.betterverse.chest.Workbench;
+import net.betterverse.chest.Teller;
+import net.betterverse.chest.Teller.Type;
 
-	public WorkbenchCommand(BetaChestPlugin plugin)
-	{
+public class WorkbenchCommand implements CommandExecutor {
+	private final ChestPlugin plugin;
+
+	public WorkbenchCommand(ChestPlugin plugin) {
 		this.plugin = plugin;
 	}
 
@@ -32,7 +30,7 @@ implements CommandExecutor
 
 				int windowId = 1;
 				eh.netServerHandler.sendPacket(new Packet100OpenWindow(1, 1, "Virtual Crafting", 9));
-				eh.activeContainer = new BetaWorkbench(eh, 1);
+				eh.activeContainer = new Workbench(eh, 1);
 			} else {
 				Teller.tell(player, Teller.Type.Warning, "You're not allowed to use this command.");
 			}
@@ -41,4 +39,3 @@ implements CommandExecutor
 		return false;
 	}
 }
-

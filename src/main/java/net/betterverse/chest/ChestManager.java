@@ -1,4 +1,4 @@
-package com.bettercraft.betachest;
+package net.betterverse.chest;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -10,21 +10,19 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
-import org.bukkit.plugin.Plugin;
-
 import net.minecraft.server.InventoryLargeChest;
 import net.minecraft.server.ItemStack;
 import net.minecraft.server.TileEntityChest;
 
-public class BetaChestManager
-{
-	private BetaChestPlugin plugin;
+import org.bukkit.plugin.Plugin;
+
+public class ChestManager {
+	private ChestPlugin plugin;
 	private final HashMap<String, InventoryLargeChest> chests;
 	private final File dataFolder;
-	
-	public BetaChestManager(Plugin plugin)
-	{
-		this.plugin = (BetaChestPlugin) plugin;
+
+	public ChestManager(Plugin plugin) {
+		this.plugin = (ChestPlugin) plugin;
 		this.dataFolder = new File(plugin.getDataFolder(),"chests/");
 		this.chests = new HashMap();
 	}
@@ -68,20 +66,18 @@ public class BetaChestManager
 
 				int field = 0;
 				String line;
-				while ((line = in.readLine()) != null)
-				{
-					
+				while ((line = in.readLine()) != null) {
+
 					if (line != "") {
 						String[] parts = line.split(":");
 						try {
 							int type = Integer.parseInt(parts[0]);
 							int amount = Integer.parseInt(parts[1]);
 							short damage = Short.parseShort(parts[2]);
-							if (type != 0)
+							if (type != 0) {
 								chest.setItem(field, new ItemStack(type, amount, damage));
-						}
-						catch (NumberFormatException localNumberFormatException)
-						{
+							}
+						} catch (NumberFormatException localNumberFormatException) {
 						}
 						field++;
 					}
@@ -95,31 +91,32 @@ public class BetaChestManager
 				e.printStackTrace();
 			}
 		}
-
 		plugin.log("Loaded " + loadedChests + " chests");
 	}
-	
+
 	// TODO: This is a temporary mess! Cleanup the save code so this functionality is integrated.
 	public boolean savePlayer(String playerName) {
-
 		this.dataFolder.mkdirs();
-		
+
 		//TODO: Throw an exception? Log the error?
-		if ( this.chests.get(playerName)==null) return false;
-		
+		if (this.chests.get(playerName) == null) {
+			return false;
+		}
+
 		InventoryLargeChest chest = (InventoryLargeChest)this.chests.get(playerName);
-		try
-		{
+		try {
 			File chestFile = new File(this.dataFolder, playerName + ".chest");
-			if (chestFile.exists()) chestFile.delete();
+			if (chestFile.exists()) {
+				chestFile.delete();
+			}
 			chestFile.createNewFile();
 
 			BufferedWriter out = new BufferedWriter(new FileWriter(chestFile));
 
 			for (ItemStack stack : chest.getContents()) {
-				if (stack != null)
+				if (stack != null) {
 					out.write(stack.id + ":" + stack.count + ":" + stack.getData() + "\r\n");
-				else {
+				} else {
 					out.write("0:0:0\r\n");
 				}
 			}
@@ -136,9 +133,11 @@ public class BetaChestManager
 		int savedChests = 0;
 
 		for (String playerName : this.chests.keySet()) {
-			if (savePlayer(playerName)) savedChests++;
+			if (savePlayer(playerName)) {
+				savedChests++;
+			}
 		}
-		
+
 		if (isAuto) {
 			plugin.log("Saved " + savedChests + " chests");
 		} else {
