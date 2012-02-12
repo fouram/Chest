@@ -8,14 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import org.bukkit.Server;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.config.Configuration;
 
 import net.betterverse.chest.commands.ChestCommands;
@@ -26,7 +22,6 @@ public class ChestPlugin extends JavaPlugin {
 	private PluginDescriptionFile pdf;
 	private static final Logger logger = Logger.getLogger("Minecraft");
 	private ChestManager chestManager;
-	private InventoryListener il;
 	public List<String> worlds;
 
 	public void log(String message) {
@@ -55,9 +50,7 @@ public class ChestPlugin extends JavaPlugin {
 			config.save();
 		}
 
-		il = new InventoryListener(this);
-
-		//setupPermissions();
+		new InventoryListener(this);
 
 		this.chestManager = new ChestManager(this);
 		this.chestManager.load();
@@ -83,7 +76,8 @@ public class ChestPlugin extends JavaPlugin {
 	}
 
 	public void onDisable() {
-		//this.chestManager.save(false);
+		
+		this.chestManager.save(false);
 
 		log("Version " + this.pdf.getVersion() + " disabled");
 	}
@@ -92,20 +86,8 @@ public class ChestPlugin extends JavaPlugin {
 		return this.chestManager;
 	}
 
-	/*private void setupPermissions() {
-		if (this.permissionHandler == null) {
-		  Plugin permissions = getServer().getPluginManager().getPlugin("Permissions");
-		  if (permissions != null) {
-			this.permissionHandler = ((Permissions)permissions).getHandler();
-			} else {
-			PluginDescriptionFile pdfFile = getDescription();
-			log.info("[" + pdfFile.getName() + "] Permission system not enabled. Using seperate settings.");
-			}
-		  }
-	}*/
-
 	private List<String> getOps() {
-		ArrayList ops = new ArrayList();
+		ArrayList<String> ops = new ArrayList<String>();
 		try {
 			BufferedReader e = new BufferedReader(new FileReader("ops.txt"));
 			String s = "";
@@ -120,22 +102,30 @@ public class ChestPlugin extends JavaPlugin {
 		}
 		return ops;
 	}
+	
+	public void tell(CommandSender sender, TellType type, String message) {
+		ChatColor color = ChatColor.WHITE;
+		switch (type) {
+		case Error:
+			color = ChatColor.WHITE;
+			break;
+		case Info:
+			color = ChatColor.DARK_GREEN;
+			break;
+		case Misc:
+			color = ChatColor.GOLD;
+			break;
+		case Success:
+			color = ChatColor.DARK_RED;
+			break;
+		case Warning:
+			color = ChatColor.DARK_BLUE;
+		}
 
-	/*public boolean hasPermission(Player player, String permission) {
-		if (this.permissionHandler != null) {
-			return this.permissionHandler.has(player, permission);
-		}
-		Configuration config = getConfiguration();
-		List admincmds = config.getStringList("admincmds", null);
-		if (!admincmds.contains(permission)) {
-			return true;
-		}
-		List admins = config.getStringList("admins", null);
-		for (String admin : admins) {
-			if (admin.equalsIgnoreCase(player.getName())) {
-				return true;
-			}
-		}
-		return false;
-	}*/
+		sender.sendMessage(ChatColor.BLACK + "[" + ChatColor.GRAY + this.pdf.getName() + ChatColor.BLACK + "] " + color + message);
+	}
+
+	public static enum TellType {
+		Info, Success, Warning, Error, Misc;
+	}
 }

@@ -1,19 +1,20 @@
 package net.betterverse.chest;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.logging.Logger;
+import java.util.Map;
+import javax.imageio.IIOException;
 
 import net.minecraft.server.InventoryLargeChest;
 import net.minecraft.server.ItemStack;
 import net.minecraft.server.TileEntityChest;
 
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.craftbukkit.inventory.CraftItemStack;
 import org.bukkit.plugin.Plugin;
 
 public class ChestManager {
@@ -24,7 +25,7 @@ public class ChestManager {
 	public ChestManager(Plugin plugin) {
 		this.plugin = (ChestPlugin) plugin;
 		this.dataFolder = new File(plugin.getDataFolder(),"chests/");
-		this.chests = new HashMap();
+		this.chests = new HashMap<String, InventoryLargeChest>();
 	}
 
 	public InventoryLargeChest getChest(String playerName) {
@@ -45,10 +46,11 @@ public class ChestManager {
 	public void removeChest(String playerName) {
 		this.chests.remove(playerName.toLowerCase());
 	}
-
-	public void load() {
+	
+	public void convert() {
 		this.chests.clear();
 
+		
 		int loadedChests = 0;
 
 		this.dataFolder.mkdirs();
@@ -66,69 +68,82 @@ public class ChestManager {
 
 				int field = 0;
 				String line;
-				while ((line = in.readLine()) != null) {
-
+				while ((line = in.readLine()) != null)
+				{
+					
 					if (line != "") {
 						String[] parts = line.split(":");
 						try {
 							int type = Integer.parseInt(parts[0]);
 							int amount = Integer.parseInt(parts[1]);
 							short damage = Short.parseShort(parts[2]);
-							if (type != 0) {
+							if (type != 0)
 								chest.setItem(field, new ItemStack(type, amount, damage));
-							}
-						} catch (NumberFormatException localNumberFormatException) {
+						}
+						catch (NumberFormatException localNumberFormatException)
+						{
 						}
 						field++;
 					}
 				}
-
+				
 				in.close();
 				this.chests.put(playerName.toLowerCase(), chest);
-
+				savePlayer(playerName);
+				File renamedFile = new File(chestFile.getAbsolutePath()+".old");
+				if (!chestFile.renameTo(renamedFile)) throw new IIOException("Can't rename old chest file!");
+				
 				loadedChests++;
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		plugin.log("Loaded " + loadedChests + " chests");
+
+		plugin.log("Converted " + loadedChests + " chests from the old format!");
 	}
 
-	// TODO: This is a temporary mess! Cleanup the save code so this functionality is integrated.
-	public boolean savePlayer(String playerName) {
+	public void load() {
+		int loadedChests = 0;
+		this.chests.clear();
 		this.dataFolder.mkdirs();
-
-		//TODO: Throw an exception? Log the error?
-		if (this.chests.get(playerName) == null) {
-			return false;
-		}
-
-		InventoryLargeChest chest = (InventoryLargeChest)this.chests.get(playerName);
-		try {
-			File chestFile = new File(this.dataFolder, playerName + ".chest");
-			if (chestFile.exists()) {
-				chestFile.delete();
+		
+		convert();
+		
+		FilenameFilter filter = new FilenameFilter() {
+			public boolean accept(File dir, String name) {
+				return name.endsWith(".yml");
 			}
-			chestFile.createNewFile();
+		};
+		
+		for (File chestFile : this.dataFolder.listFiles(filter)) {
+			InventoryLargeChest chest = new InventoryLargeChest("Premium Chest", new TileEntityChest(), new TileEntityChest());
 
-			BufferedWriter out = new BufferedWriter(new FileWriter(chestFile));
-
-			for (ItemStack stack : chest.getContents()) {
-				if (stack != null) {
-					out.write(stack.id + ":" + stack.count + ":" + stack.getData() + "\r\n");
-				} else {
-					out.write("0:0:0\r\n");
+			YamlConfiguration in = YamlConfiguration.loadConfiguration(chestFile);
+			
+			Map<String,Object> slots = in.getValues(false);
+			for (String slot : slots.keySet())
+			{
+				try {
+					org.bukkit.inventory.ItemStack theItem = in.getItemStack(slot);
+					if (theItem == null) continue;
+					
+					ItemStack loadItem = new CraftItemStack(theItem).getHandle();
+					
+					
+					chest.setItem(Integer.valueOf(slot.split("-")[1]),loadItem);
+					
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
-			out.close();
-
-		} catch (IOException e) {
-			e.printStackTrace();
+			
+			this.chests.put(chestFile.getName().split("\\.")[0].toLowerCase(), chest);
+			loadedChests++;
 		}
 
-		return true;
+		plugin.log("Loaded " + loadedChests + " chests");
 	}
-
+	
 	public void save(Boolean isAuto) {
 		int savedChests = 0;
 
@@ -138,10 +153,35 @@ public class ChestManager {
 			}
 		}
 
-		if (isAuto) {
+		if (!isAuto) {
 			plugin.log("Saved " + savedChests + " chests");
 		} else {
 			plugin.log("Auto-saved " + savedChests + " chests");
 		}
+	}
+
+	public boolean savePlayer(String player) {
+		this.dataFolder.mkdirs();
+		InventoryLargeChest chest = (InventoryLargeChest)this.chests.get(player);
+		if (chest == null) return false;
+		
+		try {
+			
+			YamlConfiguration out = new YamlConfiguration();
+			
+			int slot = 0;
+			for (ItemStack stack : chest.getContents()) {
+				if (stack != null) {
+					out.set("slot-"+Integer.toString(slot), new CraftItemStack(stack));
+				}
+				slot++;
+			}
+			
+			out.save(new File(this.dataFolder+File.separator+player+".yml"));
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return true;
 	}
 }

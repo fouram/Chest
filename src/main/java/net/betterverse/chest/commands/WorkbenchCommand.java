@@ -1,7 +1,6 @@
 package net.betterverse.chest.commands;
 
 import net.minecraft.server.EntityPlayer;
-import net.minecraft.server.NetServerHandler;
 import net.minecraft.server.Packet100OpenWindow;
 
 import org.bukkit.command.Command;
@@ -12,8 +11,6 @@ import org.bukkit.entity.Player;
 
 import net.betterverse.chest.ChestPlugin;
 import net.betterverse.chest.Workbench;
-import net.betterverse.chest.Teller;
-import net.betterverse.chest.Teller.Type;
 
 public class WorkbenchCommand implements CommandExecutor {
 	private final ChestPlugin plugin;
@@ -28,11 +25,10 @@ public class WorkbenchCommand implements CommandExecutor {
 			if (player.hasPermission("ac.workbench")) {
 				EntityPlayer eh = ((CraftPlayer)sender).getHandle();
 
-				int windowId = 1;
 				eh.netServerHandler.sendPacket(new Packet100OpenWindow(1, 1, "Virtual Crafting", 9));
 				eh.activeContainer = new Workbench(eh, 1);
 			} else {
-				Teller.tell(player, Teller.Type.Warning, "You're not allowed to use this command.");
+				plugin.tell(player, ChestPlugin.TellType.Warning, "You're not allowed to use this command.");
 			}
 			return true;
 		}
