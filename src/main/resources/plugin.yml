@@ -1,5 +1,5 @@
 name: Chest
-version: v"${project.version}"-b"${build.number}"
+version: "${project.version}"-"${build.number}"
 description: Allows you to have virtual private chests. Based on AlphaChest, and is modified for Betterverse.
 authors: [Betterverse, 4am, Mast3rPlan]
 website: http://www.betterverse.net
