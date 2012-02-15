@@ -71,7 +71,7 @@ public class ChestPlugin extends JavaPlugin {
 
 		this.worlds = config.getStringList("worlds", null);
 
-		log("Extra enhancements for Bettercraft by 4am");
+		log("Extra enhancements for Betterverse by 4am");
 		log("Version " + this.pdf.getVersion() + " enabled");
 	}
 

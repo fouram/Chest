@@ -10,7 +10,7 @@
 
 	<!-- Project information -->
 	<groupId>net.betterverse</groupId>
-	<artifactId>Chest</artifactId>
+	<artifactId>chest</artifactId>
 	<version>1.0</version>
 	<name>Chest</name>
 	<url>http://www.betterverse.net</url>
