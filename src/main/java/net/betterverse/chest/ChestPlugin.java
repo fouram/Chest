@@ -1,7 +1,6 @@
 package net.betterverse.chest;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,7 +11,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.util.config.Configuration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import net.betterverse.chest.commands.ChestCommands;
 import net.betterverse.chest.commands.WorkbenchCommand;
@@ -22,33 +21,17 @@ public class ChestPlugin extends JavaPlugin {
 	private PluginDescriptionFile pdf;
 	private static final Logger logger = Logger.getLogger("Minecraft");
 	private ChestManager chestManager;
+	private int autosaveTask = 0, autosaveInterval = 0;
 	public List<String> worlds;
+	
 
 	public void log(String message) {
 		logger.info("[" + pdf.getName() + "] "+message);
 	}
 
 	public void onEnable() {
+		
 		this.pdf = getDescription();
-		Configuration config = getConfiguration();
-		if (!new File(getDataFolder(), "config.yml").exists()) {
-			ArrayList admincmds = new ArrayList();
-			admincmds.add("ac.admin");
-			admincmds.add("ac.save");
-			admincmds.add("ac.reload");
-
-			config.setProperty("admincmds", admincmds);
-			config.setProperty("admins", getOps());
-
-			ArrayList w = new ArrayList();
-			w.add("world");
-			w.add("world_nether");
-			config.setProperty("worlds", w);
-
-			config.setProperty("autosave", Integer.valueOf(10));
-
-			config.save();
-		}
 
 		new InventoryListener(this);
 
@@ -59,24 +42,49 @@ public class ChestPlugin extends JavaPlugin {
 		getCommand("chest").setExecutor(chestCommands);
 		getCommand("clearchest").setExecutor(chestCommands);
 		getCommand("savechests").setExecutor(chestCommands);
+		getCommand("chestreload").setExecutor(chestCommands);
 		getCommand("workbench").setExecutor(new WorkbenchCommand(this));
 
-		int autosaveInterval = config.getInt("autosave", 10) * 3000;
-		getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
-			public void run() {
-				ChestPlugin.this.chestManager.save(true);
-			}
-		}
-		, autosaveInterval, autosaveInterval);
+		// If config.yml does not specify autosave, default to 10. Specify 0 to disable.
+		startAutosaveTask(getConfig().getInt("autosave", 10));
 
-		this.worlds = config.getStringList("worlds", null);
+		this.worlds = getConfig().getStringList("worlds");
 
 		log("Extra enhancements for Betterverse by 4am");
 		log("Version " + this.pdf.getVersion() + " enabled");
 	}
+	
+	private void startAutosaveTask(int interval) {
+		if (interval == 0) {
+			this.autosaveInterval = 0;
+			this.autosaveTask = 0;
+			return;
+		}
+		
+		this.autosaveInterval = interval * 3000;
+		this.autosaveTask = getServer().getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+			public void run() {
+				ChestPlugin.this.chestManager.save(true);
+			}
+		}
+		, this.autosaveInterval, this.autosaveInterval);
+	}
+	
+	public void reload() {
+		
+		reloadConfig();
+		
+		if (autosaveTask != 0) {
+			getServer().getScheduler().cancelTask(autosaveTask);
+			startAutosaveTask(getConfig().getInt("autosave", 10));
+		}
+		this.worlds = getConfig().getStringList("worlds");
+		
+	}
 
 	public void onDisable() {
 		
+		getServer().getScheduler().cancelTasks(this);
 		this.chestManager.save(false);
 
 		log("Version " + this.pdf.getVersion() + " disabled");
@@ -86,6 +94,7 @@ public class ChestPlugin extends JavaPlugin {
 		return this.chestManager;
 	}
 
+	@SuppressWarnings("unused")
 	private List<String> getOps() {
 		ArrayList<String> ops = new ArrayList<String>();
 		try {

@@ -25,6 +25,11 @@ commands:
         usage: |
             /<command> - Saves all chests to disk.
         permission: ac.save
+    chestreload:
+        description: Reloads the Chest config.yml
+        useage: |
+            /<command> - Reloads the config file
+        permission: ac.admin
     workbench:
         aliases: [craft, craftbox, craftingbox]
         description: Opens a virtual workbench.

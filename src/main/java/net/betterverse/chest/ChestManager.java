@@ -117,7 +117,10 @@ public class ChestManager {
 		
 		for (File chestFile : this.dataFolder.listFiles(filter)) {
 			InventoryLargeChest chest = new InventoryLargeChest("Premium Chest", new TileEntityChest(), new TileEntityChest());
-
+			
+			// For debugging - in the future, config can have verbose option
+			//plugin.log("Loading from "+ chestFile.getName());
+			
 			YamlConfiguration in = YamlConfiguration.loadConfiguration(chestFile);
 			
 			Map<String,Object> slots = in.getValues(false);
